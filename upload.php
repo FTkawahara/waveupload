@@ -2,6 +2,9 @@
 // ファイルの保存先ディレクトリ
 $strUploadDir = '/opt/specialfraud/result/upload/';
 
+// ファイルの保存先ディレクトリ（こちらは検証用）
+$strSaveDir = '/opt/specialfraud/save/upload/';
+
 // UnixTime取得(ミリ秒単位)
 $fTimeStart = explode(' ', microtime());
 $iUnixM = ((int)$fTimeStart[1]) * 1000 + ((int)round($fTimeStart[0] * 1000));
@@ -14,6 +17,8 @@ $strExtension = pathinfo($_FILES['upload']['name'], PATHINFO_EXTENSION);
 $strFileName = sprintf('%s_%s.%s', $iUnixM, $strTmp, $strExtension);
 // ファイルのフルパス
 $strFilePath = $strUploadDir.$strFileName;
+// 検証用保存ファイルのフルパス
+$strSavePath = $strSaveDir.$strFileName;
 
 // 念の為ファイルの重複チェックを行う
 // まず作成予定のファイル名でファイルオープン
@@ -26,16 +31,20 @@ if ($fp === FALSE){
 }
 // 重複していないとき、オープンしたファイルはそのまま残しておく
 fclose($fp);
+
 // 上書きで保存する
 if(move_uploaded_file($_FILES['upload']['tmp_name'], $strFilePath)){
 
-	// ファイルのパーミッションを644に設定する
-	chmod($filepath, 0644);
+	// ファイルのパーミッションを744に設定する
+	chmod($strFilePath, 0744);
 	// 完了メッセージを表示
 	echo 'アップロード成功';
+	// 検証用ディレクトリに音声ファイル保存
+	copy($strFilePath, $strSavePath);
 }
 else{
 	echo 'アップロード失敗';
 }
+
 
 
